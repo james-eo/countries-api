@@ -107,8 +107,16 @@ async def debug_env():
     env_vars = {
         "PORT": os.getenv("PORT"),
         "DEBUG": os.getenv("DEBUG"), 
+        # Standard variables
         "DB_HOST": os.getenv("DB_HOST"),
         "DB_NAME": os.getenv("DB_NAME"),
+        # Railway-specific variables
+        "MYSQLHOST": os.getenv("MYSQLHOST"),
+        "MYSQLPORT": os.getenv("MYSQLPORT"),
+        "MYSQLUSER": os.getenv("MYSQLUSER"),
+        "MYSQLDATABASE": os.getenv("MYSQLDATABASE"),
+        "MYSQL_DATABASE": os.getenv("MYSQL_DATABASE"),
+        # Connection strings (masked for security)
         "MYSQL_URL": "***" if os.getenv("MYSQL_URL") else None,
         "DATABASE_URL": "***" if os.getenv("DATABASE_URL") else None
     }
