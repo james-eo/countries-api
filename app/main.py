@@ -10,8 +10,13 @@ from app.models.country import Country
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Create database tables
-    Base.metadata.create_all(bind=engine)
+    # Startup: Create database tables (with error handling)
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created/verified successfully")
+    except Exception as e:
+        print(f"⚠️ Database connection failed during startup: {str(e)}")
+        print("🔄 Application will continue running, database connection will be retried on first request")
     yield
     # Shutdown: Clean up resources if needed
 
@@ -76,7 +81,46 @@ async def root():
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "message": "API is running"}
+    health_status = {
+        "status": "healthy", 
+        "message": "API is running",
+        "database": "unknown"
+    }
+    
+    # Try to check database connection without failing
+    try:
+        from app.database import engine
+        with engine.connect() as connection:
+            connection.execute("SELECT 1")
+            health_status["database"] = "connected"
+    except Exception as e:
+        health_status["database"] = f"error: {str(e)[:100]}"
+        # Don't fail the health check for database issues during startup
+    
+    return health_status
+
+
+# Debug endpoint to check environment (remove after debugging)
+@app.get("/debug/env")
+async def debug_env():
+    import os
+    env_vars = {
+        "PORT": os.getenv("PORT"),
+        "DEBUG": os.getenv("DEBUG"), 
+        # Standard variables
+        "DB_HOST": os.getenv("DB_HOST"),
+        "DB_NAME": os.getenv("DB_NAME"),
+        # Railway-specific variables
+        "MYSQLHOST": os.getenv("MYSQLHOST"),
+        "MYSQLPORT": os.getenv("MYSQLPORT"),
+        "MYSQLUSER": os.getenv("MYSQLUSER"),
+        "MYSQLDATABASE": os.getenv("MYSQLDATABASE"),
+        "MYSQL_DATABASE": os.getenv("MYSQL_DATABASE"),
+        # Connection strings (masked for security)
+        "MYSQL_URL": "***" if os.getenv("MYSQL_URL") else None,
+        "DATABASE_URL": "***" if os.getenv("DATABASE_URL") else None
+    }
+    return {"environment_variables": env_vars}
 
 
 if __name__ == "__main__":

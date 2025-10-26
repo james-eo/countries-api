@@ -1,0 +1,10 @@
+# Alternative Procfile options for Railway
+
+# Option 1: Use Python directly (current)
+web: python app/main.py
+
+# Option 2: Use start script (if needed)
+# web: ./start.sh
+
+# Option 3: Use uvicorn with explicit port handling
+# web: python -c "import os; os.system(f'uvicorn app.main:app --host 0.0.0.0 --port {os.getenv(\"PORT\", \"8000\")}')"

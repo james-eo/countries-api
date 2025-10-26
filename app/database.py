@@ -14,11 +14,24 @@ DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")
 
 if not DATABASE_URL:
     # Fallback to individual environment variables
-    DB_HOST = os.getenv("DB_HOST", "localhost")
-    DB_PORT = os.getenv("DB_PORT", "3306")
-    DB_USER = os.getenv("DB_USER")
-    DB_PASSWORD = os.getenv("DB_PASSWORD")
-    DB_NAME = os.getenv("DB_NAME")
+    # Check Railway-specific variables first, then fallback to standard names
+    DB_HOST = (os.getenv("MYSQLHOST") or 
+               os.getenv("DB_HOST") or 
+               "localhost")
+    
+    DB_PORT = (os.getenv("MYSQLPORT") or 
+               os.getenv("DB_PORT") or 
+               "3306")
+    
+    DB_USER = (os.getenv("MYSQLUSER") or 
+               os.getenv("DB_USER"))
+    
+    DB_PASSWORD = (os.getenv("MYSQLPASSWORD") or 
+                   os.getenv("DB_PASSWORD"))
+    
+    DB_NAME = (os.getenv("MYSQLDATABASE") or 
+               os.getenv("MYSQL_DATABASE") or 
+               os.getenv("DB_NAME"))
 
     # URL encode the password to handle special characters
     if DB_PASSWORD:
@@ -30,7 +43,7 @@ if not DATABASE_URL:
     DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD_ENCODED}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Ensure we're using the correct MySQL driver
-if DATABASE_URL.startswith("mysql://"):
+if DATABASE_URL and DATABASE_URL.startswith("mysql://"):
     DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
 
 # Create SQLAlchemy engine
