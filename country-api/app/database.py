@@ -9,20 +9,29 @@ import urllib.parse
 load_dotenv()
 
 # Database configuration
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "3306")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
+# Railway and other platforms often provide a complete DATABASE_URL
+DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("MYSQL_URL")
 
-# URL encode the password to handle special characters
-if DB_PASSWORD:
-    DB_PASSWORD_ENCODED = urllib.parse.quote_plus(DB_PASSWORD)
-else:
-    DB_PASSWORD_ENCODED = ""
+if not DATABASE_URL:
+    # Fallback to individual environment variables
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "3306")
+    DB_USER = os.getenv("DB_USER")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+    DB_NAME = os.getenv("DB_NAME")
 
-# Create database URL
-DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD_ENCODED}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # URL encode the password to handle special characters
+    if DB_PASSWORD:
+        DB_PASSWORD_ENCODED = urllib.parse.quote_plus(DB_PASSWORD)
+    else:
+        DB_PASSWORD_ENCODED = ""
+
+    # Create database URL
+    DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD_ENCODED}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+# Ensure we're using the correct MySQL driver
+if DATABASE_URL.startswith("mysql://"):
+    DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
 
 # Create SQLAlchemy engine
 engine = create_engine(
