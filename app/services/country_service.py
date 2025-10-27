@@ -39,9 +39,14 @@ class CountryService:
                 processed_country = self._process_country_for_db(country_data, exchange_rates)
                 
                 # Check if country exists (case-insensitive)
-                existing_country = self.db.query(Country).filter(
-                    func.lower(Country.name) == func.lower(processed_country["name"])
-                ).first()
+                # Handle case where table doesn't exist yet
+                try:
+                    existing_country = self.db.query(Country).filter(
+                        func.lower(Country.name) == func.lower(processed_country["name"])
+                    ).first()
+                except Exception:
+                    # Table doesn't exist, treat as no existing country
+                    existing_country = None
                 
                 if existing_country:
                     # Update existing country
