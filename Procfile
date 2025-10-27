@@ -1,1 +1,2 @@
-web: python app/main.py
+# Railway Procfile - Updated to fix port issue
+web: python run.py

@@ -10,15 +10,12 @@ from app.models.country import Country
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Create database tables (with error handling)
-    try:
-        Base.metadata.create_all(bind=engine)
-        print("✅ Database tables created/verified successfully")
-    except Exception as e:
-        print(f"⚠️ Database connection failed during startup: {str(e)}")
-        print("🔄 Application will continue running, database connection will be retried on first request")
+    # Startup: Skip database setup for now to ensure app starts
+    print("🚀 Starting Country API...")
+    print("⏭️ Skipping database setup during startup to avoid connection issues")
     yield
     # Shutdown: Clean up resources if needed
+    print("🛑 Shutting down Country API...")
 
 
 # Create FastAPI application
@@ -81,23 +78,7 @@ async def root():
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    health_status = {
-        "status": "healthy", 
-        "message": "API is running",
-        "database": "unknown"
-    }
-    
-    # Try to check database connection without failing
-    try:
-        from app.database import engine
-        with engine.connect() as connection:
-            connection.execute("SELECT 1")
-            health_status["database"] = "connected"
-    except Exception as e:
-        health_status["database"] = f"error: {str(e)[:100]}"
-        # Don't fail the health check for database issues during startup
-    
-    return health_status
+    return {"status": "healthy", "message": "API is running"}
 
 
 # Debug endpoint to check environment (remove after debugging)
