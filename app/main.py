@@ -29,7 +29,7 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -79,6 +79,20 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "message": "API is running"}
+
+
+# Database setup endpoint
+@app.post("/setup/database")
+async def setup_database():
+    """Create database tables"""
+    try:
+        from app.database import engine, Base
+        from app.models.country import Country
+        
+        Base.metadata.create_all(bind=engine)
+        return {"message": "Database tables created successfully", "status": "success"}
+    except Exception as e:
+        return {"error": f"Failed to create tables: {str(e)}", "status": "failed"}
 
 
 # Debug endpoint to check environment (remove after debugging)
