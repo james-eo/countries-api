@@ -23,6 +23,10 @@ class CountryService:
         Returns: (countries_updated, countries_added)
         """
         try:
+            # Ensure tables exist before proceeding
+            from app.database import engine, Base
+            Base.metadata.create_all(bind=engine)
+            
             # Fetch data from external APIs
             countries_data = await self.countries_api.fetch_countries()
             exchange_rates = await self.exchange_api.fetch_exchange_rates()
